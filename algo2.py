@@ -5,6 +5,7 @@
 import cv2
 import numpy as np
 import imutils
+import transform.py
 
 font = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -71,7 +72,8 @@ def transform_image(image):
             text2 = str(elem[0]) + " " + str(elem[1])
             cv2.putText(image, text2, (elem[0], elem[1]), font, 0.5, (255, 255, 0), 2)
 
-        cv2.imshow("contours", image)
+        #cv2.imshow("contours", image)
+        return image
 
     # if there are some contours found
     else:
@@ -203,7 +205,8 @@ def transform_image(image):
             text2 = str(elem[0]) + " " + str(elem[1])
             cv2.putText(image, text2, (elem[0], elem[1]), font, 0.5, (255, 255, 0), 2)
 
-        cv2.imshow("contours", image)
+        #cv2.imshow("contours", image)
+        return  image
 
     # just for testing purposes, show info
     # for c in cnts:
@@ -227,10 +230,12 @@ def transform_image(image):
 
 
 def main():
-    image_name = "IMAG0449.jpg"
+    image_name = "IMAG0061.jpg"
     image = cv2.imread(image_name)
-    transform_image(image)
+    cut_image = transform_image(image)
+    cv2.imshow("cut_image", cut_image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     main()
-
