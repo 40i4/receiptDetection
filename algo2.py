@@ -5,9 +5,15 @@
 import cv2
 import numpy as np
 import imutils
-import transform.py
+from transform import four_point_transform
+from skimage.filter import threshold_adaptive
 
 font = cv2.FONT_HERSHEY_SIMPLEX
+
+image_name = "IMAG0061.jpg"
+imageIn = cv2.imread(image_name)
+ratio = imageIn.shape[0] / 500.0
+orig = imageIn.copy()
 
 
 def use_image_contour(all_vertices, image):
@@ -36,13 +42,12 @@ def use_image_contour(all_vertices, image):
             new_vertices = [[0, first_vertex[1]], [0, second_vertex[1]]]
 
     all_vertices = all_vertices + new_vertices
+
     return all_vertices
 
 
 # arguments: image to transform, path to
 def transform_image(image):
-    # ratio = image.shape[0] / 500.0
-    # orig = image.copy()
     image = imutils.resize(image, height=500)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (5, 5), 0)
@@ -64,16 +69,20 @@ def transform_image(image):
 
         contours = all_vertices
         # draw lines connecting vertices
-        pts = np.array(contours, np.int32)
-        cv2.polylines(image, [pts], True, (0, 255, 255), 2)
+        # pts = np.array(contours, np.int32)
+        # cv2.polylines(image, [pts], True, (0, 255, 255), 2)
 
         # print vertices' coordinates
         for elem in contours:
             text2 = str(elem[0]) + " " + str(elem[1])
             cv2.putText(image, text2, (elem[0], elem[1]), font, 0.5, (255, 255, 0), 2)
 
-        #cv2.imshow("contours", image)
-        return image
+        contours_copy = contours
+        contours_copy_np = np.array(contours_copy)
+        cv2.drawContours(image, [contours_copy_np], -1, (0, 255, 0), 2)
+        warped = four_point_transform(orig, contours_copy_np.reshape(4, 2) * ratio)
+
+        return warped, image
 
     # if there are some contours found
     else:
@@ -196,17 +205,42 @@ def transform_image(image):
         print "coordinates of vertices ul, ur, br, bl: " + str(contours)
 
         # draw lines connecting vertices
-        pts = np.array(contours, np.int32)
+        # pts = np.array(contours, np.int32)
         # pts = pts.reshape((-1,1,2))
-        cv2.polylines(image, [pts], True, (0, 255, 255), 2)
+
+        # cv2.polylines(image, [pts], True, (0, 255, 255), 2)
 
         # print vertices' coordinates
         for elem in contours:
             text2 = str(elem[0]) + " " + str(elem[1])
             cv2.putText(image, text2, (elem[0], elem[1]), font, 0.5, (255, 255, 0), 2)
 
-        #cv2.imshow("contours", image)
-        return  image
+        # cv2.imshow("contours", image)
+
+        contours_copy = contours
+        for elem, val in enumerate(contours_copy):
+            tab = []
+            tab.append(val)
+            contours_copy[elem] = tab
+
+        print "contours copy " + str(contours_copy)
+        print "contours copy type " + str(type(contours_copy))
+        contours_copy_np = np.array(contours_copy)
+        print "contours copy np type " + str(type(contours_copy_np))
+        print "approx2 " + str(approx2)
+        print "approx2 type " + str(type(approx2))
+
+        print "contours " + str(contours)
+
+        cv2.drawContours(image, [contours_copy_np], -1, (0, 255, 0), 2)
+
+        warped = four_point_transform(orig, contours_copy_np.reshape(4, 2) * ratio)
+
+        # warped = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
+        # warped = threshold_adaptive(warped, 250, offset=20)
+        # warped = warped.astype("uint8") * 255
+
+        return warped, image
 
     # just for testing purposes, show info
     # for c in cnts:
@@ -230,12 +264,13 @@ def transform_image(image):
 
 
 def main():
-    image_name = "IMAG0061.jpg"
-    image = cv2.imread(image_name)
-    cut_image = transform_image(image)
+    warped, cut_image = transform_image(imageIn)
     cv2.imshow("cut_image", cut_image)
+    cv2.imshow("warped", imutils.resize(warped, height=500))
+
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
 
 if __name__ == "__main__":
     main()
