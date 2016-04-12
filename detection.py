@@ -1,7 +1,7 @@
 # 1) find contours of the receipt
 # 2) if there are more than 4 vertices, find those which 
 # are the most likely to be receipt vertices, mark and show them
-# and if there are any missing vertices - assign value [0,0]
+
 import cv2
 import numpy as np
 import imutils
@@ -10,7 +10,7 @@ from skimage.filter import threshold_adaptive
 
 font = cv2.FONT_HERSHEY_SIMPLEX
 
-image_name = "IMAG0061.jpg"
+image_name = "img1.jpg"
 imageIn = cv2.imread(image_name)
 ratio = imageIn.shape[0] / 500.0
 orig = imageIn.copy()
@@ -56,7 +56,6 @@ def transform_image(image):
 
     # find contours; len(cnts) returns no. of contours found
     (cnts, _) = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    print "no. of curves found: " + str(len(cnts))
 
     # if there are no contours found
     if len(cnts) < 1:
@@ -65,13 +64,8 @@ def transform_image(image):
         # return coordinates of the whole image
         all_vertices = [[0, 0], [width, 0], [width, height], [0, height]]
 
-        print "all vertices: " + str(all_vertices)
-
         contours = all_vertices
-        # draw lines connecting vertices
-        # pts = np.array(contours, np.int32)
-        # cv2.polylines(image, [pts], True, (0, 255, 255), 2)
-
+       
         # print vertices' coordinates
         for elem in contours:
             text2 = str(elem[0]) + " " + str(elem[1])
@@ -86,15 +80,6 @@ def transform_image(image):
 
     # if there are some contours found
     else:
-        # array of perimeters
-        # keeps lengths of perimeters found (no. of perimeters equals no. of contours)
-
-        # peri_arr = []
-        # for elem in cnts:
-        #     peri = cv2.arcLength(elem, True)
-        #     peri_arr.append(peri)
-        # print "peri arr: " + str(peri_arr)
-
         # sort from the longest perimeter to the shortest
         cnts_sorted = sorted(cnts, key=lambda x: cv2.arcLength(x, True), reverse=True)
         # print "cnts sorted: " + str(cnts_sorted)
@@ -103,15 +88,12 @@ def transform_image(image):
         for elem in cnts_sorted:
             perii = cv2.arcLength(elem, True)
             peri_arr2.append(perii)
-        print "perimeters sorted by length: " + str(peri_arr2)
 
         # length of the longest perimeter
         peri_max = peri_arr2[0]
-        print "peri max: " + str(peri_max)
 
         # approxPolyDP returns coordinates of vertices of the longest perimeter
         approx2 = cv2.approxPolyDP(cnts_sorted[0], 0.02 * peri_max, True)
-        print "no of vertices: " + str(len(approx2))
 
         # find vertices and put them into array all_vertices
         all_vertices = []
@@ -121,13 +103,9 @@ def transform_image(image):
             y_coord = aa[1]
             two_vertices = [x_coord, y_coord]
             all_vertices.append(two_vertices)
-        print "all vertices: " + str(all_vertices)
 
         # if only one curve was found
         if len(all_vertices) == 2:
-            print "peri_arr2: " + str(peri_arr2)
-            print "peri_arr2[0]: " + str(peri_arr2[0])
-
             # but if there are other curves
             if len(peri_arr2) > 1:
                 peri_max2 = peri_arr2[1]
@@ -147,10 +125,6 @@ def transform_image(image):
                     print "all vertices 2: " + str(all_vertices2)
 
                     all_vertices = all_vertices + all_vertices2
-                    # pts = np.array(all_vertices, np.int32)
-                    # # pts = pts.reshape((-1,1,2))
-                    # cv2.polylines(image, [pts], True, (0, 0, 255), 2)
-                    # cv2.imshow("contours", image)
 
                 # if there is no another vertical contour - use image contour
                 else:
@@ -204,18 +178,10 @@ def transform_image(image):
 
         print "coordinates of vertices ul, ur, br, bl: " + str(contours)
 
-        # draw lines connecting vertices
-        # pts = np.array(contours, np.int32)
-        # pts = pts.reshape((-1,1,2))
-
-        # cv2.polylines(image, [pts], True, (0, 255, 255), 2)
-
         # print vertices' coordinates
         for elem in contours:
             text2 = str(elem[0]) + " " + str(elem[1])
             cv2.putText(image, text2, (elem[0], elem[1]), font, 0.5, (255, 255, 0), 2)
-
-        # cv2.imshow("contours", image)
 
         contours_copy = contours
         for elem, val in enumerate(contours_copy):
@@ -223,41 +189,13 @@ def transform_image(image):
             tab.append(val)
             contours_copy[elem] = tab
 
-        print "contours copy " + str(contours_copy)
-        print "contours copy type " + str(type(contours_copy))
         contours_copy_np = np.array(contours_copy)
-        print "contours copy np type " + str(type(contours_copy_np))
-        print "approx2 " + str(approx2)
-        print "approx2 type " + str(type(approx2))
-
-        print "contours " + str(contours)
 
         cv2.drawContours(image, [contours_copy_np], -1, (0, 255, 0), 2)
 
         warped = four_point_transform(orig, contours_copy_np.reshape(4, 2) * ratio)
 
-        # warped = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
-        # warped = threshold_adaptive(warped, 250, offset=20)
-        # warped = warped.astype("uint8") * 255
-
         return warped, image
-
-    # just for testing purposes, show info
-    # for c in cnts:
-    #     # how many vertices are found
-    #     print "\nno of points: " + str(len(c))
-    #
-    #     area = cv2.contourArea(c)
-    #     print "area: " + str(area)
-    #     peri = cv2.arcLength(c, True)
-    #     print "perimeter: " + str(peri)
-    #     approx = cv2.approxPolyDP(c, 0.02 * peri, True)
-    #     print "len of approx: " + str(len(approx))
-    #
-    #     peri2 = cv2.arcLength(c, False)
-    #     print "perimeter2: " + str(peri2)
-    #     approx2 = cv2.approxPolyDP(c, 0.02 * peri2, False)
-    #     print "len of approx2: " + str(len(approx2))
 
     cv2.waitKey(0)   
     cv2.destroyAllWindows()
