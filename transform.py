@@ -1,4 +1,5 @@
 # Author: Adrian Rosebrock
+# Copyright (c) 2015-2016 Adrian Rosebrock, http://www.pyimagesearch.com
 
 # import the necessary packages
 import numpy as np
