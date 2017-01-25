@@ -46,7 +46,7 @@ def use_image_contour(all_vertices, image):
     return all_vertices
 
 
-# arguments: image to transform, path to
+# argument: image to transform
 def transform_image(image):
     image = imutils.resize(image, height=500)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
