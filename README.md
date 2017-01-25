@@ -7,4 +7,4 @@ A script made for detecting rectangular objects, cropping and transforming them 
 
 If you want to try it out, clone this repository and assign name of the file-you-want-to-perform-detection-on to image_name variable, and then simply run the detection.py script. Enjoy. Or not. I don't know.
 
-Function four_point_transform used for image transformation (from transform.py) was taken from Adrian Rosebrock's imutils library: https://github.com/jrosebr1/imutils. Check out his website (http://www.pyimagesearch.com), his work is awesome and it really helped me out writing this script!
+Function four_point_transform (from transform.py file) used for image transformation was taken from Adrian Rosebrock's <a href="https://github.com/jrosebr1/imutils">imutils</a> library under the MIT license. Check out his <a href="http://www.pyimagesearch.com">website</a>, his work is awesome and it really helped me out writing this script!
